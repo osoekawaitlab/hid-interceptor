@@ -1,0 +1,84 @@
+site_name: HID Interceptor Documentation
+site_description: A Python-based HID event interceptor for Linux that grabs /dev/input/event* devices and dispatches events to user-defined hooks.
+site_author: osoken
+site_url: https://osoekawaitlab.github.io/hid-interceptor/
+repo_url: https://github.com/osoekawaitlab/hid-interceptor
+repo_name: hid-interceptor
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.tracking
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.annotation
+    - content.code.copy
+  language: en
+  icon:
+    repo: fontawesome/brands/github
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - API Reference: api.md
+  - Architecture: architecture.md
+
+plugins:
+  - search:
+      separator: '[\s\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            docstring_section_style: table
+            show_source: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            members_order: source
+            group_by_category: true
+            show_category_heading: true
+            show_if_no_docstring: false
+            inherited_members: false
+            filters:
+              - "!^_"
+            merge_init_into_class: true
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - admonition
+  - tables
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg

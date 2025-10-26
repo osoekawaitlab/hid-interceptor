@@ -1,0 +1,95 @@
+[project]
+name = "hid-interceptor"
+dynamic = ["version"]
+description = "A Python-based HID event interceptor for Linux that grabs /dev/input/event* devices and dispatches events to user-defined hooks."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "evdev>=1.9.2",
+    "pydantic>=2.12.3",
+    "pyudev>=0.24.4",
+    "typing-extensions>=4.12.2",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.18.2",
+    "nox>=2025.10.16",
+    "pytest>=8.4.2",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=7.0.0",
+    "pytest-mock>=3.15.1",
+    "pytest-randomly>=4.0.1",
+    "ruff>=0.14.2",
+]
+docs = [
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.6.22",
+    "mkdocstrings>=0.30.1",
+    "mkdocstrings-python>=1.18.2",
+]
+
+[build-system]
+requires = ["setuptools>=70.1"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+version = {attr = "hid_interceptor.__version__"}
+
+
+[tool.ruff]
+indent-width = 4
+target-version = "py310"
+line-length = 88
+include = ["src/**/*.py", "tests/**/*.py"]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "COM812",  # trailing-comma-missing (conflicts with formatter)
+    "ISC001",  # single-line-implicit-string-concatenation (conflicts with formatter)
+    "D203",    # one-blank-line-before-class (conflicts with D211)
+    "D213",    # multi-line-summary-second-line (conflicts with D212)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "S101",    # assert-used (pytest uses asserts)
+    "SLF001",  # private-member-access (tests need to access private members)
+    "ARG002",  # unused-method-argument (fixtures are often unused)
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+]
