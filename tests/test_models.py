@@ -38,51 +38,12 @@ class TestInputKind:
         assert isinstance(InputKind.ABS, str)
 
 
-class TestBaseEvent:
-    """Test BaseEvent model."""
-
-    def test_base_event_creation(self) -> None:
-        """Test creating a BaseEvent."""
-        event = BaseEvent(
-            kind=InputKind.KEY,
-            device="/dev/input/event0",
-            timestamp=1234567890.123456,
-            code=1,
-            code_name="KEY_A",
-        )
-        assert event.kind == InputKind.KEY
-        assert event.device == "/dev/input/event0"
-        assert event.timestamp == TEST_TIMESTAMP
-        assert event.code == 1
-        assert event.code_name == "KEY_A"
-
-    def test_base_event_is_frozen(self) -> None:
-        """Test that BaseEvent is immutable (frozen)."""
-        event = BaseEvent(
-            kind=InputKind.KEY,
-            device="/dev/input/event0",
-            timestamp=1234567890.0,
-            code=1,
-            code_name="KEY_A",
-        )
-        with pytest.raises(ValidationError):
-            event.kind = InputKind.REL
-
-    def test_base_event_missing_fields(self) -> None:
-        """Test that missing required fields raise ValidationError."""
-        with pytest.raises(ValidationError):
-            BaseEvent(  # type: ignore[call-arg]
-                kind=InputKind.KEY, device="/dev/input/event0", timestamp=1.0
-            )
-
-
 class TestKeyEvent:
     """Test KeyEvent model."""
 
     def test_key_event_creation(self) -> None:
         """Test creating a KeyEvent."""
         event = KeyEvent(
-            kind=InputKind.KEY,
             device="/dev/input/event0",
             timestamp=1234567890.0,
             code=1,
@@ -95,7 +56,6 @@ class TestKeyEvent:
     def test_key_event_value_up(self) -> None:
         """Test KeyEvent with value=0 (UP)."""
         event = KeyEvent(
-            kind=InputKind.KEY,
             device="/dev/input/event0",
             timestamp=1234567890.0,
             code=1,
@@ -107,7 +67,6 @@ class TestKeyEvent:
     def test_key_event_value_down(self) -> None:
         """Test KeyEvent with value=1 (DOWN)."""
         event = KeyEvent(
-            kind=InputKind.KEY,
             device="/dev/input/event0",
             timestamp=1234567890.0,
             code=1,
@@ -119,7 +78,6 @@ class TestKeyEvent:
     def test_key_event_value_repeat(self) -> None:
         """Test KeyEvent with value=2 (REPEAT)."""
         event = KeyEvent(
-            kind=InputKind.KEY,
             device="/dev/input/event0",
             timestamp=1234567890.0,
             code=1,
@@ -132,7 +90,6 @@ class TestKeyEvent:
         """Test KeyEvent rejects value < 0."""
         with pytest.raises(ValidationError):  # ValidationError
             KeyEvent(
-                kind=InputKind.KEY,
                 device="/dev/input/event0",
                 timestamp=1234567890.0,
                 code=1,
@@ -144,7 +101,6 @@ class TestKeyEvent:
         """Test KeyEvent rejects value > 2."""
         with pytest.raises(ValidationError):  # ValidationError
             KeyEvent(
-                kind=InputKind.KEY,
                 device="/dev/input/event0",
                 timestamp=1234567890.0,
                 code=1,
@@ -171,7 +127,6 @@ class TestRelEvent:
     def test_rel_event_creation(self) -> None:
         """Test creating a RelEvent."""
         event = RelEvent(
-            kind=InputKind.REL,
             device="/dev/input/event0",
             timestamp=1234567890.0,
             code=0,
@@ -184,7 +139,6 @@ class TestRelEvent:
     def test_rel_event_negative_value(self) -> None:
         """Test RelEvent accepts negative values."""
         event = RelEvent(
-            kind=InputKind.REL,
             device="/dev/input/event0",
             timestamp=1234567890.0,
             code=0,
@@ -212,7 +166,6 @@ class TestAbsEvent:
     def test_abs_event_creation(self) -> None:
         """Test creating an AbsEvent."""
         event = AbsEvent(
-            kind=InputKind.ABS,
             device="/dev/input/event0",
             timestamp=1234567890.0,
             code=0,
@@ -225,7 +178,6 @@ class TestAbsEvent:
     def test_abs_event_zero_value(self) -> None:
         """Test AbsEvent with value=0."""
         event = AbsEvent(
-            kind=InputKind.ABS,
             device="/dev/input/event0",
             timestamp=1234567890.0,
             code=0,
@@ -237,7 +189,6 @@ class TestAbsEvent:
     def test_abs_event_large_value(self) -> None:
         """Test AbsEvent with large values."""
         event = AbsEvent(
-            kind=InputKind.ABS,
             device="/dev/input/event0",
             timestamp=1234567890.0,
             code=0,
@@ -327,7 +278,6 @@ class TestInputEventDiscriminatedUnion:
     def test_events_are_immutable(self) -> None:
         """Test that all event types are immutable."""
         key_event = KeyEvent(
-            kind=InputKind.KEY,
             device="/dev/input/event0",
             timestamp=1234567890.0,
             code=1,
@@ -335,7 +285,6 @@ class TestInputEventDiscriminatedUnion:
             value=1,
         )
         rel_event = RelEvent(
-            kind=InputKind.REL,
             device="/dev/input/event0",
             timestamp=1234567890.0,
             code=0,
@@ -343,7 +292,6 @@ class TestInputEventDiscriminatedUnion:
             value=5,
         )
         abs_event = AbsEvent(
-            kind=InputKind.ABS,
             device="/dev/input/event0",
             timestamp=1234567890.0,
             code=0,

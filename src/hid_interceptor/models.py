@@ -33,7 +33,6 @@ class BaseEvent(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    kind: InputKind
     device: str
     timestamp: float
     code: int
@@ -107,7 +106,6 @@ def convert_raw_event(raw_event: RawInputEvent, device_path: str) -> InputEvent 
         )
 
         return KeyEvent(
-            kind=InputKind.KEY,
             device=device_path,
             timestamp=ts,
             code=raw_event["code"],
@@ -117,7 +115,6 @@ def convert_raw_event(raw_event: RawInputEvent, device_path: str) -> InputEvent 
 
     if raw_event["type"] == ecodes.EV_REL:
         return RelEvent(
-            kind=InputKind.REL,
             device=device_path,
             timestamp=ts,
             code=raw_event["code"],
@@ -127,7 +124,6 @@ def convert_raw_event(raw_event: RawInputEvent, device_path: str) -> InputEvent 
 
     if raw_event["type"] == ecodes.EV_ABS:
         return AbsEvent(
-            kind=InputKind.ABS,
             device=device_path,
             timestamp=ts,
             code=raw_event["code"],
