@@ -169,3 +169,71 @@ class TestHIDInterceptor:
         # Assert cleanup still happened
         opened_device = mock_device_class.open.return_value
         opened_device.close.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_run_sets_ready_event(
+        self, mock_list_devices: MagicMock, mock_device_class: MagicMock
+    ) -> None:
+        """Test that ready_event is set when monitoring starts successfully."""
+        mock_list_devices.return_value = ["/dev/input/event0"]
+        mock_dispatcher = MagicMock(spec=EventDispatcher)
+        mock_dispatcher.dispatch = AsyncMock()
+
+        interceptor = HIDInterceptor(
+            dispatcher=mock_dispatcher, device_class=mock_device_class
+        )
+        stop_event = asyncio.Event()
+        ready_event = asyncio.Event()
+
+        # Run the interceptor in a background task
+        run_task = asyncio.create_task(interceptor.run(stop_event, ready_event))
+        await asyncio.sleep(0)  # Allow the task to start
+
+        # Wait for ready_event to be set
+        await asyncio.wait_for(ready_event.wait(), timeout=1.0)
+        assert ready_event.is_set()
+
+        # Signal stop and wait for completion
+        stop_event.set()
+        await run_task
+
+    @pytest.mark.asyncio
+    async def test_run_does_not_set_ready_event_when_no_devices(
+        self, mock_list_devices: MagicMock
+    ) -> None:
+        """Test that ready_event is NOT set when no devices are found."""
+        mock_list_devices.return_value = []
+        interceptor = HIDInterceptor()
+        stop_event = asyncio.Event()
+        ready_event = asyncio.Event()
+
+        # This should complete without setting ready_event
+        await interceptor.run(stop_event, ready_event)
+
+        # ready_event should not be set
+        assert not ready_event.is_set()
+
+    @pytest.mark.asyncio
+    async def test_run_works_without_ready_event(
+        self, mock_list_devices: MagicMock, mock_device_class: MagicMock
+    ) -> None:
+        """Test that run works normally when ready_event is not provided."""
+        mock_list_devices.return_value = ["/dev/input/event0"]
+        mock_dispatcher = MagicMock(spec=EventDispatcher)
+        mock_dispatcher.dispatch = AsyncMock()
+
+        interceptor = HIDInterceptor(
+            dispatcher=mock_dispatcher, device_class=mock_device_class
+        )
+        stop_event = asyncio.Event()
+
+        # Run without ready_event (should not raise)
+        run_task = asyncio.create_task(interceptor.run(stop_event))
+        await asyncio.sleep(0)
+
+        # Signal stop and wait for completion
+        stop_event.set()
+        await run_task
+
+        # Verify it ran successfully
+        mock_device_class.open.assert_awaited_once()

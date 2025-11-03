@@ -41,13 +41,16 @@ class HIDInterceptor:
         self._device_class = device_class
         self._logger = logger
 
-    async def run(self, stop_event: asyncio.Event) -> None:
+    async def run(
+        self, stop_event: asyncio.Event, ready_event: asyncio.Event | None = None
+    ) -> None:
         """Run the HID interception loop.
 
         Monitors for input events until a stop signal is received.
 
         Args:
             stop_event: An asyncio Event that signals when to stop monitoring.
+            ready_event: Optional Event that will be set when monitoring starts.
         """
         self._logger.info("Starting HIDInterceptor monitoring")
         opened_devices: list[Device] = []
@@ -65,15 +68,25 @@ class HIDInterceptor:
                 self._logger.warning("No devices found or opened. Doing nothing.")
                 return
 
+            # Create start events for each device
+            start_events = [asyncio.Event() for _ in opened_devices]
+
             # Create a monitoring task for each device
             tasks = [
-                asyncio.create_task(self._monitor_one_device(device))
-                for device in opened_devices
+                asyncio.create_task(self._monitor_one_device(device, start_events[i]))
+                for i, device in enumerate(opened_devices)
             ]
+
+            # Wait for all monitoring tasks to actually start
+            await asyncio.gather(*[event.wait() for event in start_events])
 
             self._logger.info(
                 "Monitoring %d device(s). Waiting for stop signal...", len(tasks)
             )
+
+            # Signal that monitoring has started successfully
+            if ready_event is not None:
+                ready_event.set()
 
             try:
                 # Wait for the stop signal
@@ -95,9 +108,20 @@ class HIDInterceptor:
                 device.close()
             self._logger.info("HIDInterceptor monitoring stopped")
 
-    async def _monitor_one_device(self, device: Device) -> None:
-        """Monitor a single device and dispatch its events."""
+    async def _monitor_one_device(
+        self, device: Device, started_event: asyncio.Event | None = None
+    ) -> None:
+        """Monitor a single device and dispatch its events.
+
+        Args:
+            device: The device to monitor.
+            started_event: Optional event to signal when monitoring has started.
+        """
         try:
+            # Signal that this monitoring task has started
+            if started_event is not None:
+                started_event.set()
+
             async for event in device.events():
                 await self._dispatcher.dispatch(event)
         except asyncio.CancelledError:
